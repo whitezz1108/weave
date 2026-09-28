@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#0e0e10" />
+  <title>Weave — 让想法自由展开</title>
+  <link rel="stylesheet" href="weave-studio.css" />
+  <link rel="stylesheet" href="weave-focus.css" />
+  <link rel="stylesheet" href="weave-tour.css" />
+  <script defer src="weave-v2.js"></script>
+  <script defer src="chat-import.js"></script>
+  <script defer src="weave-chat.js"></script>
+  <script defer src="weave-studio.js"></script>
+  <script defer src="weave-focus.js"></script>
+  <script defer src="weave-tour.js"></script>
+</head>
+<body>
+  <div class="shell chat-mode" id="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-symbol"><span class="brand-orbit orbit-a"></span><span class="brand-orbit orbit-b"></span><span class="brand-core"></span></div>
+        <div><div class="brand-name">织思 <b>WEAVE</b></div><div class="brand-caption">EXPLORATION OS · PREVIEW 02</div></div>
+      </div>
+      <div class="sidebar-section-label">WORKSPACE <span>01 / 03</span></div>
+      <button class="workspace-current" id="workspaceCurrent"><span class="workspace-glyph">✦</span><span><b>发散思维实验室</b><small>一场正在生长的探索</small></span><span class="chevron">⌄</span></button>
+      <nav class="nav-list" aria-label="工作台导航">
+        <button class="nav-button active" data-nav="chat"><span class="nav-glyph">☰</span><span>长对话</span><kbd>01</kbd></button>
+        <button class="nav-button" data-nav="map"><span class="nav-glyph">◇</span><span>思维图谱</span><kbd>02</kbd></button>
+        <button class="nav-button" data-nav="tasks"><span class="nav-glyph">◫</span><span>任务运行板</span><kbd id="taskNavCount">03</kbd></button>
+        <button class="nav-button" data-nav="checkpoints"><span class="nav-glyph">◎</span><span>Checkpoint</span><kbd id="checkpointNavCount">06</kbd></button>
+      </nav>
+      <div class="chat-history" id="chatHistoryWrap"><div class="sidebar-section-label">最近对话 <span>LOCAL</span></div><div class="chat-thread-list" id="chatThreadList"></div></div>
+      <div class="sidebar-rule"></div>
+      <div class="sidebar-section-label">LIVE GROWTH <span id="growthCount">67%</span></div>
+      <div class="growth-card">
+        <div class="growth-top"><span>思绪生长进度</span><span class="live-dot">正在浇灌</span></div>
+        <div class="tree-stage">
+          <div class="tree-halo"></div>
+          <svg class="growth-tree" viewBox="0 0 180 120" aria-label="任务推进时逐渐长叶的树">
+            <defs><linearGradient id="trunkGrad" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#7563a5"/><stop offset="1" stop-color="#c4afff"/></linearGradient><linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#b9dafa"/><stop offset="1" stop-color="#6579f3"/></linearGradient></defs>
+            <ellipse cx="93" cy="110" rx="65" ry="7" fill="#554275" opacity=".23"/>
+            <path class="tree-trunk" d="M92 109 C91 86 91 66 91 28 M91 73 C70 67 65 57 59 45 M92 63 C112 58 120 47 125 33 M91 48 C82 43 79 34 78 25" fill="none" stroke="url(#trunkGrad)" stroke-width="3.3" stroke-linecap="round"/>
+            <path class="tree-vein" d="M92 104 C93 80 89 58 91 29" fill="none" stroke="#e1d4ff" stroke-width=".7" opacity=".65"/>
+            <ellipse class="tree-leaf leaf-1" cx="56" cy="44" rx="12" ry="5" transform="rotate(24 56 44)"/>
+            <ellipse class="tree-leaf leaf-2" cx="70" cy="58" rx="12" ry="5" transform="rotate(-24 70 58)"/>
+            <ellipse class="tree-leaf leaf-3" cx="126" cy="31" rx="12" ry="5" transform="rotate(-28 126 31)"/>
+            <ellipse class="tree-leaf leaf-4" cx="111" cy="50" rx="11" ry="5" transform="rotate(26 111 50)"/>
+            <ellipse class="tree-leaf leaf-5" cx="78" cy="23" rx="11" ry="5" transform="rotate(35 78 23)"/>
+            <ellipse class="tree-leaf leaf-6" cx="94" cy="26" rx="10" ry="5" transform="rotate(-58 94 26)"/>
+            <path class="water-drop drop-a" d="M0 -6 C3 -2 5 0 5 3 A5 5 0 1 1 -5 3 C-5 0 -3 -2 0 -6" fill="url(#waterGrad)"/>
+            <path class="water-drop drop-b" d="M0 -5 C3 -1 4 1 4 3 A4 4 0 1 1 -4 3 C-4 1 -3 -1 0 -5" fill="url(#waterGrad)"/>
+          </svg>
+          <div class="growth-number"><strong id="growthValue">67</strong><span>%</span></div>
+        </div>
+        <div class="growth-bottom"><span>每完成一个阶段，思路会长出新的枝叶</span><span class="growth-glint">✧</span></div>
+      </div>
+      <div class="sidebar-section-label tasks-label">ACTIVE TASKS <button id="openTaskBoard">查看全部 →</button></div>
+      <div class="sidebar-tasks" id="sidebarTasks"></div>
+      <div class="sidebar-spacer"></div>
+      <div class="connector-card" id="connectorCard"><div class="connector-icon">⌁</div><div><b id="connectorTitle">Claude Code</b><small id="connectorSubtitle">演示模式 · 未连接本地 CLI</small></div><span class="connector-light" id="connectorLight"></span></div>
+      <button class="sidebar-connect" id="connectButton">连接本地 Claude Code <span>↗</span></button>
+      <div class="sidebar-foot"><span class="person-avatar">L</span><span>Lin's workspace</span><span class="foot-menu">···</span></div>
+    </aside>
+
+    <main class="main-stage">
+      <header class="topbar"><div class="topbar-left"><span class="topbar-crumb">WORKSPACES</span><span class="slash">/</span><span>发散思维实验室</span><span class="slash">/</span><strong>Idea Map</strong></div><div class="topbar-right"><div class="view-switch"><button class="view-button active" data-view="chat">对话</button><button class="view-button" data-view="map">图谱</button></div><span class="topbar-mode" id="topbarMode"><i></i> 演示运行</span><span class="topbar-divider"></span><button id="newExploration" class="topbar-button">＋ 新分支</button></div></header>
+      <section class="stage-inner">
+        <section class="chat-view" id="chatView" aria-label="原生长对话">
+          <div class="chat-view-head"><div><div class="chat-overline">EXPLORATION CHAT <span class="chat-live-point"></span> <span id="chatTurnCount">0 条消息</span></div><h1 id="chatTopicTitle">长对话，从一个问题开始</h1><p>让想法先自然发生；当你需要看清脉络，再整理成 Idea Map。</p></div><button class="convert-button" id="convertChatButton">◇　整理为 Idea Map</button></div>
+          <div class="chat-scroll" id="chatScroll"><div class="chat-messages" id="chatMessages"></div></div>
+          <div class="chat-composer-wrap"><form class="chat-composer" id="chatComposer"><textarea id="chatInput" rows="3" placeholder="继续这个问题，或提出一个突然想到的侧问题…" spellcheck="false"></textarea><div class="chat-compose-bottom"><span class="chat-composer-hint">每一轮都会保留在这里，之后可整理成图谱</span><div class="chat-compose-controls"><select id="chatModelSelect" aria-label="聊天模型"><option value="sonnet">Claude Sonnet</option><option value="opus">Claude Opus</option><option value="haiku">Claude Haiku</option></select><select id="chatModeSelect" aria-label="聊天模式"><option value="demo">演示聊天</option><option value="real" disabled>本地 Claude Code</option></select><button id="chatSend" aria-label="发送消息">↑</button></div></div></form><div class="chat-bottom-note" id="chatBottomNote">演示聊天会显示模拟回复；连接本地服务后可使用真实 Claude Code 对话。</div></div>
+        </section>
+        <div class="page-heading"><div><div class="overline"><span class="overline-line"></span> PROJECT / 001　·　ACTIVE EXPLORATION</div><h1>让思路，<em>自由生长。</em></h1><p>把发散的对话长成可导航的图谱，再把每一个想法交给执行代理。</p></div><div class="heading-stat"><span class="heading-stat-number" id="headlineNodeCount">18</span><span>个想法节点<br/>持续生长中</span></div></div>
+        <section class="graph-panel" aria-label="交互思维图谱">
+          <div class="graph-header"><div class="graph-title-group"><div class="graph-title-icon">◇</div><div><strong>思维图谱 <span>IDEA MAP</span></strong><small id="graphMeta">18 nodes · 4 branches</small></div></div><div class="graph-tools"><button class="tool-button" id="collapseAll" title="折叠或展开所有一级分支">▤ <span>折叠全部</span></button><button class="tool-button" id="focusSelected" title="定位当前节点">⊙ <span>定位</span></button><button class="tool-button" id="fitMap" title="适配全图">⌗ <span>全图</span></button><span class="tool-separator"></span><button class="tool-button square" id="zoomOut" aria-label="缩小">−</button><span id="zoomValue" class="zoom-value">78%</span><button class="tool-button square" id="zoomIn" aria-label="放大">＋</button></div></div>
+          <div class="graph-viewport" id="graphViewport"><div class="graph-ambient ambient-one"></div><div class="graph-ambient ambient-two"></div><div class="graph-world" id="graphWorld"><svg id="graphEdges" class="graph-edges"></svg><div id="graphNodes"></div></div><div class="canvas-caption"><span class="caption-mouse">↕</span> 拖动画布 · 滚轮缩放 · 点击节点聚焦 <span class="caption-break">·</span> 节点右上角可展开 / 折叠</div><div class="minimap-wrap"><div class="minimap-head">NAVIGATOR <span>◇</span></div><svg id="minimap" viewBox="0 0 176 105" aria-label="图谱小地图"></svg></div></div>
+          <div class="graph-bottom"><div class="legend"><span><i class="legend-dot done"></i>已完成</span><span><i class="legend-dot running"></i>运行中</span><span><i class="legend-dot review"></i>待验收</span><span><i class="legend-dot queued"></i>待探索</span></div><button class="quiet-link" id="resetSample">重置示例 ↺</button></div>
+        </section>
+        <section class="execution-strip"><div class="strip-icon"><span class="strip-pulse"></span>⌁</div><div class="strip-copy"><div class="strip-kicker">ORCHESTRATION / 当前执行流</div><strong id="stripTitle">分支上下文传递方案</strong><small id="stripSubtitle">演示任务运行中 · 进度与浇灌动画同步</small></div><div class="strip-track"><span id="stripFill"></span><i class="strip-drop"></i></div><div class="strip-percent" id="stripPercent">64%</div><button id="showRunningNode" class="strip-arrow" title="定位任务节点">↗</button></section>
+      </section>
+    </main>
+
+    <aside class="inspector"><div class="inspector-top"><div class="inspector-label">NODE INSPECTOR <span>✧</span></div><div class="selected-state"><span class="state-dot" id="stateDot"></span><span id="stateText">RUNNING</span></div></div><div class="inspector-heading"><div class="node-kicker" id="nodeKicker">EXECUTION / 03</div><h2 id="inspectorTitle">分支上下文传递方案</h2><p id="inspectorSummary"></p><div class="node-path" id="nodePath"></div></div><div class="inspector-tabs"><button class="tab active" data-tab="overview">概览</button><button class="tab" data-tab="logs">运行日志 <span id="logCount">0</span></button><button class="tab" data-tab="accept">Checkpoint <span id="cpCount">0</span></button></div><div class="inspector-content">
+      <div class="tab-panel active" id="panel-overview"><div class="field-caption">AGENT CONTROL <span>指挥当前节点</span></div><label class="field-label" for="promptEditor">分发 Prompt</label><textarea id="promptEditor" class="prompt-editor" spellcheck="false"></textarea><div class="field-grid"><label>执行模型<select id="modelSelect"><option value="sonnet">Claude Sonnet</option><option value="opus">Claude Opus</option><option value="haiku">Claude Haiku</option></select></label><label>执行权限<select id="permissionSelect"><option value="plan">Plan · 只规划</option><option value="default">Default · 可执行</option></select></label></div><label class="mode-row">执行方式<select id="executionMode"><option value="demo">演示运行</option><option value="real" disabled>本地 Claude Code（未连接）</option></select></label><div class="action-row"><button class="primary-action" id="dispatchButton"><span>↗</span> 分发给执行代理</button><button class="secondary-action" id="cancelButton" title="停止当前任务">■</button></div><div class="run-hint" id="runHint">演示运行会生成模拟进度与日志。启动本地桥接后才会调用 CLI。</div><div class="inspector-rule"></div><div class="field-caption">BRANCH CONTROL <span>整理思路</span></div><div class="branch-actions"><button id="addBranchButton">＋ 添加子分支</button><button id="toggleBranchButton">⊞ 折叠子分支</button></div><div class="node-stats"><div><span>状态</span><b id="nodeStatus">运行中</b></div><div><span>执行模型</span><b id="nodeModel">Claude Sonnet</b></div><div><span>已用时间</span><b id="nodeElapsed">00:24</b></div></div></div>
+      <div class="tab-panel" id="panel-logs"><div class="field-caption">EXECUTION LOG <span id="logsModeLabel">演示日志</span></div><div class="terminal-head"><span>● <span id="terminalTaskId">preview-session</span></span><span id="terminalStatus">RUNNING</span></div><div class="terminal" id="logList"></div><div class="process-evidence"><div><span>进程状态</span><b id="processStatus">模拟运行中</b></div><div><span>退出码</span><b id="exitCode">—</b></div><div><span>输出事件</span><b id="outputCount">0</b></div></div></div>
+      <div class="tab-panel" id="panel-accept"><div class="field-caption">CHECKPOINTS <span>节点执行轨迹</span></div><div id="checkpointList" class="checkpoint-list"></div><button id="addCheckpointButton" class="add-checkpoint">＋ 记录 checkpoint</button><div class="inspector-rule"></div><div class="field-caption">ACCEPTANCE <span>人工验收</span></div><div class="accept-grid"><div><span>任务运行</span><b id="acceptRunState">—</b></div><div><span>产出记录</span><b id="acceptOutputState">—</b></div><div><span>验收结论</span><b id="acceptVerdict">待验收</b></div></div><textarea id="acceptNote" class="accept-note" placeholder="写下验收依据或需要修改的地方…"></textarea><div class="accept-actions"><button id="acceptPass">✓ 验收通过</button><button id="acceptNeedsWork">↶ 需要修改</button></div><p class="accept-disclaimer">验收由你确认；进程退出与日志仅是辅助证据。</p></div>
+    </div><div class="inspector-footer"><span class="footer-spark">✧</span><span id="inspectorFooterText">选中图谱节点，查看它的上下文与执行状态。</span></div></aside>
+  </div>
+  <div class="dialog-backdrop" id="branchDialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="dialog"><div class="dialog-eyebrow">NEW BRANCH <button id="closeDialog" aria-label="关闭">×</button></div><h3 id="dialogTitle">从这个想法，长出新分支</h3><p id="dialogParent"></p><label>分支标题<input id="branchTitle" maxlength="48" placeholder="例如：如何设计任务验收？" /></label><label>给执行代理的初始 Prompt<textarea id="branchPrompt" placeholder="这个分支想探索什么？也可以稍后再写。"></textarea></label><div class="dialog-actions"><button id="cancelDialog">取消</button><button id="createBranch">创建分支 ↗</button></div></div></div>
+  <div class="dialog-backdrop" id="convertDialog" role="dialog" aria-modal="true" aria-labelledby="convertTitle"><div class="convert-panel"><div class="convert-topline"><span>CHAT → IDEA MAP</span><button id="closeConvert" aria-label="关闭">×</button></div><div class="convert-heading"><div><h3 id="convertTitle">把长聊天，整理成可管理的想法</h3><p>先抽出候选结构，再由你决定哪些想法进入图谱。</p></div><span id="convertTurnBadge">0 轮对话</span></div><div class="convert-steps"><div><b>01</b><span>对话来源</span></div><i></i><div><b>02</b><span>候选结构</span></div><i></i><div><b>03</b><span>人工确认</span></div></div><div class="convert-toolbar"><div><strong id="convertStats">0 个候选节点</strong><span id="convertMethod">基础规则整理</span></div><button id="aiRefineButton" disabled>✦ Claude 辅助精整</button></div><div class="convert-warning" id="convertWarning"></div><div class="candidate-list" id="candidateList"></div><div class="convert-bottom"><span>可修改标题、父节点与采纳范围。导入后仍可在图谱中折叠和继续执行。</span><div><button id="cancelConvert">返回聊天</button><button id="applyConvert">生成 Idea Map →</button></div></div></div></div>
+  <div class="toast" id="toast" role="status"></div>
+</body>
+</html>
