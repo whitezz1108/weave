@@ -278,7 +278,7 @@
     const title=$('branchTitle').value.trim(),prompt=$('branchPrompt').value.trim();
     if(!title){$('branchTitle').focus();toast('先给这个分支起一个名字');return}
     const parent=active(),id='n-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
-    const node={id,parent:parent.id,title,kind:'NEW BRANCH',status:'queued',progress:0,summary:'从「'+parent.title+'」生长的新分支。',prompt:prompt||'请围绕「'+title+'」探索，并给出可执行的下一步。',collapsed:false,model:'sonnet',permission:'plan',mode:'demo',taskId:null,startedAt:null,finishedAt:null,exitCode:null,sessionId:null,resultIsError:false,logs:[],checkpoints:[],acceptance:null};
+    const node={id,parent:parent.id,title,kind:'NEW BRANCH',status:'queued',progress:0,summary:WeaveI18n.language==='en'?'A branch from “'+parent.title+'”.':'从「'+parent.title+'」生长的新分支。',prompt:prompt||(WeaveI18n.language==='en'?'Explore “'+title+'” and suggest actionable next steps.':'请围绕「'+title+'」探索，并给出可执行的下一步。'),collapsed:false,model:'sonnet',permission:'plan',mode:'demo',taskId:null,startedAt:null,finishedAt:null,exitCode:null,sessionId:null,resultIsError:false,logs:[],checkpoints:[],acceptance:null};
     parent.collapsed=false;state.nodes.push(node);closeBranch();selectNode(id,true);toast('新分支已加入图谱');
   }
   function addLog(n,type,text){

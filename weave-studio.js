@@ -40,7 +40,7 @@
   function annotate(){
     document.querySelectorAll('.structure-note').forEach(n=>n.remove());if(state.view!=='hybrid')return;
     const result=WeaveChat.getCandidates();const labels={TOPIC:'主问题',QUESTION:'待解问题',INSIGHT:'留下的想法',DECISION:'决定',IDEA:'想法',BRANCH:'旁支',ACTION:'下一步'};
-    const seen=new Set();for(const n of result.nodes){let id=n.sourceIds?.[0];if(seen.has(id))continue;seen.add(id);let article=[...document.querySelectorAll('[data-message]')].find(e=>e.dataset.message===id);if(!article)continue;let note=document.createElement('button');note.className='structure-note';note.title=n.title;note.innerHTML='<span></span>';note.firstChild.textContent=labels[n.kind]||'想法';note.append(document.createTextNode(n.title.slice(0,32)));note.onclick=()=>reveal();article.append(note)}
+    const seen=new Set();for(const n of result.nodes){let id=n.sourceIds?.[0];if(seen.has(id))continue;seen.add(id);let article=[...document.querySelectorAll('[data-message]')].find(e=>e.dataset.message===id);if(!article)continue;let note=document.createElement('button');note.className='structure-note';note.title=n.title;note.innerHTML='<span></span>';note.firstChild.textContent=WeaveI18n.t(labels[n.kind]||'想法');note.append(document.createTextNode(n.title.slice(0,32)));note.onclick=()=>reveal();article.append(note)}
   }
   async function conversation(hybrid=false){
     if(state.busy)return;closeSurfaces();snapshotCurrent();
@@ -124,6 +124,7 @@
   document.addEventListener('pointerdown',e=>{if(!e.target.closest('.history-popover,#railChat,#railHistory'))history.classList.remove('show');if(!e.target.closest('.settings-popover,#railSettings,#modeIndicator,#pageMore,.composer-options'))settings.classList.remove('show')});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSurfaces()});
   window.WeaveStudio={reveal,conversation,keepIdea,showExecution,annotate,isTransitioning:()=>state.busy};
+  document.addEventListener('weave:language-changed',()=>{if(state.view==='hybrid')annotate()});
   snapshotCurrent();
   if(localStorage.getItem('weave-preserved-map')){const old=document.createElement('button');old.className='sample-link';old.textContent='打开既有图谱 ↗';old.onclick=()=>{if(state.busy)return;try{const snapshot=JSON.parse(localStorage.getItem('weave-preserved-map'));snapshotCurrent();WeaveApp.restoreSnapshot(snapshot);WeaveChat.setView('map');app.classList.add('legacy-map-view');setControls('map');closeSurfaces();requestAnimationFrame(()=>WeaveApp.fitMap())}catch(_){}};history.append(old)}
   requestAnimationFrame(()=>{$('chatScroll').scrollTop=0;state.threadId=WeaveChat.getCurrent().id});

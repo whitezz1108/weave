@@ -104,7 +104,7 @@
     }
     state.branchId=branch.id;state.error='';$('app').classList.add('explore-open');$('app').classList.remove('thread-visible');
     $('exploreQuote').textContent='“'+branch.quote+'”';$('exploreContext').textContent=branch.context;
-    $('exploreInput').value=branch.messages.length?'':'这里的「'+branch.quote.slice(0,70)+'」是什么意思？';
+    $('exploreInput').value=branch.messages.length?'':WeaveI18n.language==='en'?'What does “'+branch.quote.slice(0,70)+'” mean here?':'这里的「'+branch.quote.slice(0,70)+'」是什么意思？';
     renderPanel();chat().refresh();
     requestAnimationFrame(()=>{anchorFor(branch)?.scrollIntoView({block:'nearest'});requestAnimationFrame(()=>{drawStrand(true);setTimeout(()=>{if(active()?.id===branch.id){$('app').classList.add('thread-visible');$('exploreInput').focus()}},matchMedia('(prefers-reduced-motion: reduce)').matches?0:160)})});
     if(thread.mode==='demo'&&!branch.messages.length)setTimeout(()=>{if(active()?.id===branch.id)sendBranch()},280);
@@ -121,6 +121,7 @@
     requestAnimationFrame(()=>$('exploreScroll').scrollTop=$('exploreScroll').scrollHeight);
   }
   function demoAnswer(branch,question){
+    if(WeaveI18n.language==='en')return WeaveI18n.branchAnswer(branch.quote);
     const word=branch.quote;
     if(/context contamination|上下文污染/i.test(word))return '“上下文污染”是指：前一个问题的背景被带进新的问题，让 AI 在不该继承的假设下回答。比如你在讨论法律合同，突然岔开问写作风格，模型仍把合同条款当成当前目标。\n\n侧边探索把这段追问隔离在独立支线；你理解后，可以直接回到原句继续读。';
     if(/如何|为什么|怎么|何时/.test(question))return '可以从三个角度理解「'+word+'」：它在这里指什么、为什么会影响当前问题、以及一个最小例子。\n\n就当前原文而言，它提醒我们先弄清这处概念，再继续沿着主线阅读。';
@@ -223,7 +224,7 @@
     const branch=(thread?.explorations||[]).find(item=>item.id===node.explorationId);
     const messageIndex=thread?.messages.indexOf(source);
     $('focusIdeaSource').textContent=source
-      ?(branch?'“'+branch.quote+'”\n':'')+'第 '+(messageIndex+1)+' 条消息 · '+(source.role==='assistant'?'AI 回答':'你的提问')+'\n'+(branch?.context||source.content).slice(0,185)
+      ?(branch?'“'+branch.quote+'”\n':'')+(WeaveI18n.language==='en'?'Message '+(messageIndex+1)+' · '+(source.role==='assistant'?'AI reply':'Your question'):'第 '+(messageIndex+1)+' 条消息 · '+(source.role==='assistant'?'AI 回答':'你的提问'))+'\n'+(branch?.context||source.content).slice(0,185)
       :'来源对话暂不可用';
     $('focusGoSource').disabled=!source;
     const related=(thread?.explorations||[]).filter(item=>item.messageId===source?.id);
@@ -236,5 +237,6 @@
   document.addEventListener('keydown',event=>{if(event.key==='Escape'){hideTooltip();if(state.branchId)close()}});
   window.WeaveFocus={decorate,goToAnchor,openFromMessage:open,dismiss:close};
   $('chatMessages').addEventListener('keydown',event=>{if((event.key==='Enter'||event.key===' ')&&event.target.matches('[data-anchor]')){event.preventDefault();event.target.click()}});
+  document.addEventListener('weave:language-changed',()=>{updateInspector();if(active())renderPanel()});
   decorate();updateMapCover();updateInspector();
 })();

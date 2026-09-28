@@ -9,7 +9,7 @@
   const id = () => 'c-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,8);
   const now = () => new Date().toISOString();
   const firstSample = () => ({
-    id:id(), title:'长对话如何长出新想法', mode:'demo', model:'sonnet', sessionId:null,
+    id:id(), title:WeaveI18n.t('长对话如何长出新想法'), language:WeaveI18n.language, mode:'demo', model:'sonnet', sessionId:null,
     createdAt:now(), demo:true,
     messages:window.WeaveImport.sampleMessages().map(message => ({...message, at:now(), sample:true, pinned:false}))
   });
@@ -21,7 +21,7 @@
         if(threads.length){
           let activeId=threads.some(thread=>thread.id===data.activeId)?data.activeId:threads[0].id;
           if(!localStorage.getItem('weave-studio-intro')){
-            const draft=threads.find(thread=>!thread.messages.length)||{id:id(),title:'新对话',mode:'demo',model:'sonnet',sessionId:null,createdAt:now(),messages:[]};
+            const draft=threads.find(thread=>!thread.messages.length)||{id:id(),title:WeaveI18n.t('新对话'),mode:'demo',model:'sonnet',sessionId:null,createdAt:now(),messages:[]};
             if(!threads.includes(draft))threads.unshift(draft);
             activeId=draft.id;localStorage.setItem('weave-studio-intro','1');
           }
@@ -30,7 +30,7 @@
       }
     }catch(_){ }
     const sample=firstSample();
-    const draft={id:id(),title:'新对话',mode:'demo',model:'sonnet',sessionId:null,createdAt:now(),messages:[]};
+    const draft={id:id(),title:WeaveI18n.t('新对话'),mode:'demo',model:'sonnet',sessionId:null,createdAt:now(),messages:[]};
     try{localStorage.setItem('weave-studio-intro','1')}catch(_){}
     return {threads:[draft,sample],activeId:sample.id};
   }
@@ -45,7 +45,7 @@
     clearTimeout(notify.timer);notify.timer=setTimeout(()=>box.classList.remove('show'),3000);
   }
   function timeLabel(value){
-    const date=new Date(value);return Number.isNaN(date.getTime())?'':date.toLocaleTimeString('zh-CN',{hour:'2-digit',minute:'2-digit'});
+    const date=new Date(value);return Number.isNaN(date.getTime())?'':date.toLocaleTimeString(WeaveI18n.language==='en'?'en-US':'zh-CN',{hour:'2-digit',minute:'2-digit'});
   }
   function renderThreads(){
     $('chatThreadList').innerHTML=state.threads.filter(thread=>thread.messages.length).map(thread=>{
@@ -55,6 +55,7 @@
     }).join('')||'<div class="chat-thread-empty">点击“新对话”，从一个问题开始。</div>';
   }
   function welcome(){
+    if(WeaveI18n.language==='en')return '<div class="chat-welcome"><div class="chat-welcome-icon">◇</div><h2>One question. Many possible directions.</h2><p>Talk it through. Follow a tangent. Keep the discoveries that matter.</p><div class="chat-prompts"><button data-prompt="I want to design a product that helps heavy AI users keep track of ideas in long conversations. Help me define the core scenario.">Explore a product idea →</button><button data-prompt="Help me think through a complex problem: identify the main question, the unknowns, and the side questions worth exploring.">Start with a complex question →</button></div></div>';
     return '<div class="chat-welcome"><div class="chat-welcome-icon">◇</div><h2>一个问题，可以长出很多方向。</h2><p>像普通 AI 聊天一样持续提问；侧问题先自然出现。之后再将这段对话整理成可编辑的 Idea Map。</p><div class="chat-prompts"><button data-prompt="我想设计一个帮助重度 AI 用户管理长对话中分支想法的产品。先帮我梳理核心场景。">梳理一个产品想法 →</button><button data-prompt="我正在探索一个复杂问题，请先和我一起明确主线、未知点与可能的侧问题。">从复杂问题开始 →</button></div></div>';
   }
   function renderMessages(scrollToEnd=false){
@@ -93,7 +94,7 @@
     if(state.busy){notify('这条回复完成后就可以开始新对话');return}
     const draft=state.threads.find(thread=>!thread.messages.length);
     if(draft){state.activeId=draft.id;save();render();$('chatInput').value='';$('chatInput').focus();return}
-    const thread={id:id(),title:'新对话',mode:state.bridgeAvailable?'real':'demo',model:'sonnet',sessionId:null,createdAt:now(),messages:[]};
+    const thread={id:id(),title:WeaveI18n.t('新对话'),mode:state.bridgeAvailable?'real':'demo',model:'sonnet',sessionId:null,createdAt:now(),messages:[]};
     state.threads.unshift(thread);state.activeId=thread.id;
     save();render();$('chatInput').value='';$('chatInput').focus();notify('已创建新对话');
   }
@@ -116,6 +117,7 @@
     document.dispatchEvent(new CustomEvent('weave:view-changed',{detail:{view:state.view}}));
   }
   function demoReply(question){
+    if(WeaveI18n.language==='en')return WeaveI18n.demoReply(question);
     const q=question.replace(/\s+/g,' ').trim();
     if(/验收|checkpoint|任务|执行|agent|cli/i.test(q))return '可以把这个问题单独作为一个任务分支。先写清目标与 Prompt，再记录运行状态、过程输出和 checkpoint；最后由你查看结果并决定是否验收。';
     if(/分支|侧问题|发散|岔开/i.test(q))return '这个侧问题值得保留它的来处。继续聊完后，点“看见结构”，你可以在候选结构里把它挂到主线或上一个想法之下，并保留原消息入口。';
@@ -153,7 +155,7 @@
     if(thread.mode==='real'&&!state.bridgeAvailable){notify('先启动本地服务，或切换为演示聊天');return}
     const message={id:id(),role:'user',content,at:now(),pinned:false};
     thread.messages.push(message);
-    if(thread.title==='新对话')thread.title=short(content,28)||'新对话';
+    if(thread.title==='新对话'||thread.title==='New conversation')thread.title=short(content,28)||'新对话';
     $('chatInput').value='';state.busy=true;save();render(true);
     try{
       const reply=thread.mode==='real'?await realReply(thread,message):await new Promise(resolve=>setTimeout(()=>resolve(demoReply(content)),650));
@@ -327,8 +329,8 @@
   bind();render(true);setView('chat');ensureSourceButton();save();health();
   window.WeaveChat={setView,openThread,returnToSource,makeThread,getCurrent:current,getThreads:()=>state.threads,save,refresh:render,
     openGuideSample(){
-      let thread=state.threads.find(t=>t.guideDemo);
-      if(!thread){thread=firstSample();thread.id=id();thread.title='Weave · 引导演示';thread.guideDemo=true;thread.demo=false;state.threads.push(thread)}
+      let thread=state.threads.find(t=>t.guideDemo&&(t.language||'zh')===WeaveI18n.language);
+      if(!thread){thread=firstSample();thread.id=id();thread.title=WeaveI18n.t('Weave · 引导演示');thread.guideDemo=true;thread.demo=false;state.threads.push(thread)}
       openThread(thread.id);requestAnimationFrame(()=>$('chatScroll').scrollTop=0);return thread;
     },
     getCandidates(){
@@ -340,7 +342,7 @@
       return result;
     },
     openSample(){
-      let sample=state.threads.find(thread=>thread.demo);
+      let sample=state.threads.find(thread=>thread.demo&&(thread.language||'zh')===WeaveI18n.language);
       if(!sample){sample=firstSample();state.threads.push(sample)}
       openThread(sample.id);
     }
