@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="weave-studio.css" />
   <link rel="stylesheet" href="weave-focus.css" />
   <link rel="stylesheet" href="weave-tour.css" />
+  <link rel="stylesheet" href="weave-bg.css" />
   <script defer src="weave-i18n.js"></script>
   <script defer src="weave-v2.js"></script>
   <script defer src="chat-import.js"></script>
@@ -15,8 +16,17 @@
   <script defer src="weave-studio.js"></script>
   <script defer src="weave-focus.js"></script>
   <script defer src="weave-tour.js"></script>
+  <script defer src="weave-bg.js"></script>
 </head>
 <body>
+  <div class="weave-bg" aria-hidden="true">
+    <div class="bg-photo"></div>
+    <div class="bg-blob blob-a"></div>
+    <div class="bg-blob blob-b"></div>
+    <div class="bg-blob blob-c"></div>
+    <div class="bg-veil"></div>
+    <canvas class="bg-particles" id="bgParticles"></canvas>
+  </div>
   <div class="shell chat-mode" id="app">
     <aside class="sidebar">
       <div class="brand">
