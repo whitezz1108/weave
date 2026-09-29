@@ -3,33 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="theme-color" content="#0e0e10" />
-  <title>Weave — 让想法自由展开</title>
-  <link rel="stylesheet" href="weave-studio.css" />
-  <link rel="stylesheet" href="weave-focus.css" />
-  <link rel="stylesheet" href="weave-tour.css" />
-  <link rel="stylesheet" href="weave-bg.css" />
-  <script defer src="weave-i18n.js"></script>
+  <meta name="theme-color" content="#0c0a13" />
+  <title>织思 Weave — 探索与执行工作台</title>
+  <link rel="stylesheet" href="weave-v2.css" />
   <script defer src="weave-v2.js"></script>
-  <script defer src="chat-import.js"></script>
-  <script defer src="weave-chat.js"></script>
-  <script defer src="weave-studio.js"></script>
-  <script defer src="weave-focus.js"></script>
-  <script defer src="weave-dispatch.js"></script>
-  <script defer src="weave-export.js"></script>
-  <script defer src="weave-tour.js"></script>
-  <script defer src="weave-bg.js"></script>
 </head>
 <body>
-  <div class="weave-bg" aria-hidden="true">
-    <div class="bg-photo"></div>
-    <div class="bg-blob blob-a"></div>
-    <div class="bg-blob blob-b"></div>
-    <div class="bg-blob blob-c"></div>
-    <div class="bg-veil"></div>
-    <canvas class="bg-particles" id="bgParticles"></canvas>
-  </div>
-  <div class="shell chat-mode" id="app">
+  <div class="shell" id="app">
     <aside class="sidebar">
       <div class="brand">
         <div class="brand-symbol"><span class="brand-orbit orbit-a"></span><span class="brand-orbit orbit-b"></span><span class="brand-core"></span></div>
@@ -38,12 +18,10 @@
       <div class="sidebar-section-label">WORKSPACE <span>01 / 03</span></div>
       <button class="workspace-current" id="workspaceCurrent"><span class="workspace-glyph">✦</span><span><b>发散思维实验室</b><small>一场正在生长的探索</small></span><span class="chevron">⌄</span></button>
       <nav class="nav-list" aria-label="工作台导航">
-        <button class="nav-button active" data-nav="chat"><span class="nav-glyph">☰</span><span>长对话</span><kbd>01</kbd></button>
-        <button class="nav-button" data-nav="map"><span class="nav-glyph">◇</span><span>思维图谱</span><kbd>02</kbd></button>
+        <button class="nav-button active" data-nav="map"><span class="nav-glyph">◇</span><span>思维图谱</span><kbd>01</kbd></button>
         <button class="nav-button" data-nav="tasks"><span class="nav-glyph">◫</span><span>任务运行板</span><kbd id="taskNavCount">03</kbd></button>
         <button class="nav-button" data-nav="checkpoints"><span class="nav-glyph">◎</span><span>Checkpoint</span><kbd id="checkpointNavCount">06</kbd></button>
       </nav>
-      <div class="chat-history" id="chatHistoryWrap"><div class="sidebar-section-label">最近对话 <span>LOCAL</span></div><div class="chat-thread-list" id="chatThreadList"></div></div>
       <div class="sidebar-rule"></div>
       <div class="sidebar-section-label">LIVE GROWTH <span id="growthCount">67%</span></div>
       <div class="growth-card">
@@ -77,13 +55,8 @@
     </aside>
 
     <main class="main-stage">
-      <header class="topbar"><div class="topbar-left"><span class="topbar-crumb">WORKSPACES</span><span class="slash">/</span><span>发散思维实验室</span><span class="slash">/</span><strong>Idea Map</strong></div><div class="topbar-right"><div class="view-switch"><button class="view-button active" data-view="chat">对话</button><button class="view-button" data-view="map">图谱</button></div><span class="topbar-mode" id="topbarMode"><i></i> 演示运行</span><span class="topbar-divider"></span><button id="newExploration" class="topbar-button">＋ 新分支</button></div></header>
+      <header class="topbar"><div class="topbar-left"><span class="topbar-crumb">WORKSPACES</span><span class="slash">/</span><span>发散思维实验室</span><span class="slash">/</span><strong>Idea Map</strong></div><div class="topbar-right"><span class="topbar-mode" id="topbarMode"><i></i> 演示运行</span><span class="topbar-divider"></span><button id="newExploration" class="topbar-button">＋ 新分支</button></div></header>
       <section class="stage-inner">
-        <section class="chat-view" id="chatView" aria-label="原生长对话">
-          <div class="chat-view-head"><div><div class="chat-overline">EXPLORATION CHAT <span class="chat-live-point"></span> <span id="chatTurnCount">0 条消息</span></div><h1 id="chatTopicTitle">长对话，从一个问题开始</h1><p>让想法先自然发生；当你需要看清脉络，再整理成 Idea Map。</p></div><button class="convert-button" id="convertChatButton">◇　整理为 Idea Map</button></div>
-          <div class="chat-scroll" id="chatScroll"><div class="chat-messages" id="chatMessages"></div></div>
-          <div class="chat-composer-wrap"><form class="chat-composer" id="chatComposer"><textarea id="chatInput" rows="3" placeholder="继续这个问题，或提出一个突然想到的侧问题…" spellcheck="false"></textarea><div class="chat-compose-bottom"><span class="chat-composer-hint">每一轮都会保留在这里，之后可整理成图谱</span><div class="chat-compose-controls"><select id="chatModelSelect" aria-label="聊天模型"><option value="sonnet">Claude Sonnet</option><option value="opus">Claude Opus</option><option value="haiku">Claude Haiku</option></select><select id="chatModeSelect" aria-label="聊天模式"><option value="demo">演示聊天</option><option value="real" disabled>本地 Claude Code</option></select><button id="chatSend" aria-label="发送消息">↑</button></div></div></form><div class="chat-bottom-note" id="chatBottomNote">演示聊天会显示模拟回复；连接本地服务后可使用真实 Claude Code 对话。</div></div>
-        </section>
         <div class="page-heading"><div><div class="overline"><span class="overline-line"></span> PROJECT / 001　·　ACTIVE EXPLORATION</div><h1>让思路，<em>自由生长。</em></h1><p>把发散的对话长成可导航的图谱，再把每一个想法交给执行代理。</p></div><div class="heading-stat"><span class="heading-stat-number" id="headlineNodeCount">18</span><span>个想法节点<br/>持续生长中</span></div></div>
         <section class="graph-panel" aria-label="交互思维图谱">
           <div class="graph-header"><div class="graph-title-group"><div class="graph-title-icon">◇</div><div><strong>思维图谱 <span>IDEA MAP</span></strong><small id="graphMeta">18 nodes · 4 branches</small></div></div><div class="graph-tools"><button class="tool-button" id="collapseAll" title="折叠或展开所有一级分支">▤ <span>折叠全部</span></button><button class="tool-button" id="focusSelected" title="定位当前节点">⊙ <span>定位</span></button><button class="tool-button" id="fitMap" title="适配全图">⌗ <span>全图</span></button><span class="tool-separator"></span><button class="tool-button square" id="zoomOut" aria-label="缩小">−</button><span id="zoomValue" class="zoom-value">78%</span><button class="tool-button square" id="zoomIn" aria-label="放大">＋</button></div></div>
@@ -101,7 +74,6 @@
     </div><div class="inspector-footer"><span class="footer-spark">✧</span><span id="inspectorFooterText">选中图谱节点，查看它的上下文与执行状态。</span></div></aside>
   </div>
   <div class="dialog-backdrop" id="branchDialog" role="dialog" aria-modal="true" aria-labelledby="dialogTitle"><div class="dialog"><div class="dialog-eyebrow">NEW BRANCH <button id="closeDialog" aria-label="关闭">×</button></div><h3 id="dialogTitle">从这个想法，长出新分支</h3><p id="dialogParent"></p><label>分支标题<input id="branchTitle" maxlength="48" placeholder="例如：如何设计任务验收？" /></label><label>给执行代理的初始 Prompt<textarea id="branchPrompt" placeholder="这个分支想探索什么？也可以稍后再写。"></textarea></label><div class="dialog-actions"><button id="cancelDialog">取消</button><button id="createBranch">创建分支 ↗</button></div></div></div>
-  <div class="dialog-backdrop" id="convertDialog" role="dialog" aria-modal="true" aria-labelledby="convertTitle"><div class="convert-panel"><div class="convert-topline"><span>CHAT → IDEA MAP</span><button id="closeConvert" aria-label="关闭">×</button></div><div class="convert-heading"><div><h3 id="convertTitle">把长聊天，整理成可管理的想法</h3><p>先抽出候选结构，再由你决定哪些想法进入图谱。</p></div><span id="convertTurnBadge">0 轮对话</span></div><div class="convert-steps"><div><b>01</b><span>对话来源</span></div><i></i><div><b>02</b><span>候选结构</span></div><i></i><div><b>03</b><span>人工确认</span></div></div><div class="convert-toolbar"><div><strong id="convertStats">0 个候选节点</strong><span id="convertMethod">基础规则整理</span></div><button id="aiRefineButton" disabled>✦ Claude 辅助精整</button></div><div class="convert-warning" id="convertWarning"></div><div class="candidate-list" id="candidateList"></div><div class="convert-bottom"><span>可修改标题、父节点与采纳范围。导入后仍可在图谱中折叠和继续执行。</span><div><button id="cancelConvert">返回聊天</button><button id="applyConvert">生成 Idea Map →</button></div></div></div></div>
   <div class="toast" id="toast" role="status"></div>
 </body>
 </html>

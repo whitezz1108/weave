@@ -5,7 +5,7 @@
   const reduce=()=>matchMedia('(prefers-reduced-motion: reduce)').matches;
   const ease='cubic-bezier(.2,.8,.2,1)',sleep=ms=>new Promise(r=>setTimeout(r,ms));
   const frame=()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));
-  const paths={new:'M12 5v14M5 12h14',chat:'M20 11a8 8 0 0 1-8 8H5l-3 3V11a9 9 0 0 1 18 0Z',map:'M5 12h14M12 5v14M3 10h4v4H3zM10 3h4v4h-4zM17 10h4v4h-4zM10 17h4v4h-4z',history:'M3 11a9 9 0 1 1 2 7M3 5v6h6M12 7v5l3 2',shape:'M4 18 12 4l8 14H4Zm2-2 12 0M12 4v14'};
+  const paths={new:'M12 5v14M5 12h14',chat:'M20 11a8 8 0 0 1-8 8H5l-3 3V11a9 9 0 0 1 18 0Z',map:'M5 12h14M12 5v14M3 10h4v4H3zM10 3h4v4h-4zM17 10h4v4h-4zM10 17h4v4h-4z',history:'M3 11a9 9 0 1 1 2 7M3 5v6h6M12 7v5l3 2',shape:'M4 18 12 4l8 14H4Zm2-2 12 0M12 4v14',bolt:'M13 2 4 14h6l-1 8 9-12h-6l1-8Z',doc:'M6 2h8l4 4v16H6zM14 2v4h4M9 12h6M9 16h6'};
   const icon=name=>'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="'+paths[name]+'"/></svg>';
   const mark='<svg viewBox="0 0 32 32" fill="none" aria-hidden="true"><path d="M5 7v13a5 5 0 0 0 10 0V8m-5-1v13a5 5 0 0 0 10 0V8m-5-1v13a5 5 0 0 0 10 0V7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
   const legacy=document.createElement('div');legacy.id='legacyUI';legacy.hidden=true;document.body.append(legacy);
@@ -13,13 +13,19 @@
   const history=document.createElement('section');history.id='historyPopover';history.className='history-popover';history.setAttribute('aria-label','最近对话');history.innerHTML='<div class="history-head"><span>最近对话</span><button id="closeHistory" aria-label="关闭历史记录">×</button></div>';
   history.append($('chatHistoryWrap'));document.body.append(history);
   while(sidebar.firstChild)legacy.append(sidebar.firstChild);
-  sidebar.innerHTML='<button class="rail-mark" id="weaveHome" aria-label="Weave">'+mark+'</button><button class="rail-button rail-new" id="railNew" data-tip="新对话" aria-label="新对话">'+icon('new')+'</button><button class="rail-button active" id="railChat" data-tip="对话" aria-label="对话">'+icon('chat')+'</button><button class="rail-button" id="railMap" data-tip="看见结构" aria-label="看见结构">'+icon('map')+'<span class="map-plus" aria-hidden="true">+1</span></button><button class="rail-button" id="railHistory" data-tip="历史记录" aria-label="历史记录">'+icon('history')+'</button><div class="rail-gap"></div><button class="rail-avatar" id="railSettings" aria-label="对话设置">W</button>';
+  sidebar.innerHTML='<button class="rail-mark" id="weaveHome" aria-label="Weave">'+mark+'</button><button class="rail-button rail-new" id="railNew" data-tip="新对话" aria-label="新对话">'+icon('new')+'</button><button class="rail-button active" id="railChat" data-tip="对话" aria-label="对话">'+icon('chat')+'</button><button class="rail-button" id="railMap" data-tip="看见结构" aria-label="看见结构">'+icon('map')+'<span class="map-plus" aria-hidden="true">+1</span></button><button class="rail-button" id="railDispatch" data-tip="任务分发" aria-label="任务分发">'+icon('bolt')+'</button><button class="rail-button" id="railExport" data-tip="导出文档" aria-label="导出文档">'+icon('doc')+'</button><button class="rail-button" id="railHistory" data-tip="历史记录" aria-label="历史记录">'+icon('history')+'</button><div class="rail-gap"></div><button class="rail-avatar" id="railSettings" aria-label="对话设置">W</button>';
   const topbar=document.querySelector('.topbar');while(topbar.firstChild)legacy.append(topbar.firstChild);
   // setView updates this hidden strong; the visible control is a three-position semantic scale.
   topbar.innerHTML='<div class="topbar-left"><span class="wordmark">weave</span><strong></strong><button class="mode-indicator" id="modeIndicator" title="示例对话使用预设回答；点击更改对话设置。">ⓘ</button></div><div class="topbar-right"><nav class="semantic-control" aria-label="思考视图"><button data-semantic="chat" class="active">对话</button><div class="semantic-track"><button data-semantic="chat" aria-label="对话视图" class="active"></button><button data-semantic="hybrid" aria-label="对话与结构批注"></button><button data-semantic="map" aria-label="结构视图"></button></div><button data-semantic="map">结构</button></nav><button class="topbar-menu" id="pageMore" aria-label="更多">···</button></div>';
-  const settings=document.createElement('section');settings.id='settingsPopover';settings.className='settings-popover';settings.innerHTML='<div class="history-head"><span>对话设置</span><button id="closeSettings" aria-label="关闭设置">×</button></div><label id="chatModeLabel">回复来源</label><p>示例使用预设回答。启动本地服务后，可选择 Claude Code。</p>';
+  // 对话标题移到 weave 标志右侧；「看见结构 / Reveal the map」移到右上操作区。
+  const topbarLeft=topbar.querySelector('.topbar-left');
+  const topicTitle=$('chatTopicTitle');topicTitle.classList.add('topbar-title');
+  topbarLeft.insertBefore(topicTitle,topbarLeft.querySelector('strong'));
+  topbar.querySelector('.topbar-right').insertBefore($('convertChatButton'),$('pageMore'));
+  const settings=document.createElement('section');settings.id='settingsPopover';settings.className='settings-popover';settings.innerHTML='<div class="history-head"><span>对话设置</span><button id="closeSettings" aria-label="关闭设置">×</button></div><label id="chatModeLabel">回复来源</label><p>示例使用预设回答。启动本地服务后，可选择 Claude Code。</p><p>真实 Claude Code 会话在上下文接近上限时会自动整理较早内容；完整记录仍保留。</p>';
   $('chatModeLabel');settings.querySelector('label').append($('chatModeSelect'));settings.append($('connectButton'));document.body.append(settings);
   const options=document.createElement('button');options.type='button';options.className='composer-options';options.textContent='···';options.setAttribute('aria-label','对话设置');options.onclick=()=>settings.classList.toggle('show');document.querySelector('.chat-compose-bottom').prepend(options);
+  const glass=document.createElement('div');glass.className='chat-glass';glass.setAttribute('aria-hidden','true');$('chatView').prepend(glass);
   const empty=document.createElement('div');empty.className='empty-welcome';empty.innerHTML='<h1>一个念头，从这里展开。</h1><p>跟着问题走，随时回到原处。</p><button class="sample-link" id="openExample">打开一段示例对话 ↗</button>';$('chatView').prepend(empty);
   $('chatInput').placeholder='继续这个想法…';$('convertChatButton').innerHTML=icon('shape')+'看见结构';
   const sheet=document.createElement('section');sheet.id='executionSheet';sheet.className='execution-sheet';sheet.setAttribute('aria-label','运行代理');sheet.innerHTML='<div class="execution-head"><span>运行代理</span><button id="closeExecution" aria-label="关闭运行面板">×</button></div>';
@@ -30,7 +36,7 @@
   document.querySelector('.inspector-top').insertAdjacentHTML('beforeend','<button id="closeInspector" class="inspector-close" aria-label="关闭想法详情">×</button>');
   const state={view:'chat',busy:false,scroll:0,threadId:null,animations:[]};
   const setControls=view=>{state.view=view;document.querySelectorAll('[data-semantic]').forEach(b=>{b.classList.toggle('active',b.dataset.semantic===view);b.setAttribute('aria-pressed',String(b.dataset.semantic===view))});$('railChat').classList.toggle('active',view!=='map');$('railMap').classList.toggle('active',view==='map')};
-  function closeSurfaces(){history.classList.remove('show');settings.classList.remove('show');app.classList.remove('inspector-open');sheet.classList.remove('show')}
+  function closeSurfaces(){history.classList.remove('show');settings.classList.remove('show');app.classList.remove('inspector-open');sheet.classList.remove('show');$('dispatchSheet')?.classList.remove('show');$('exportPopover')?.classList.remove('show')}
   function snapshotCurrent(){const root=WeaveApp.getRoot();const owner=WeaveChat.getThreads().find(t=>t.id===root?.sourceChatThreadId);if(owner){owner.ideaMap=WeaveApp.getSnapshot();WeaveChat.save()}else if(WeaveApp.hasSaved){try{localStorage.setItem('weave-preserved-map',JSON.stringify(WeaveApp.getSnapshot()))}catch(_){}}}
   function buildGraph(candidates){
     snapshotCurrent();const thread=WeaveChat.getCurrent();
@@ -121,7 +127,7 @@
   document.addEventListener('weave:run-agent',showExecution);
   document.addEventListener('weave:chat-rendered',()=>{if(!$('modeIndicator'))return;const t=WeaveChat.getCurrent();$('modeIndicator').textContent='ⓘ';$('modeIndicator').setAttribute('aria-label',t.mode==='real'?'回复来源：Claude Code':'回复来源：预设示例');$('modeIndicator').title=t.mode==='real'?'通过本机 Claude Code 回复':'当前回答为交互演示；点击更改来源';if(state.threadId!==t.id){state.threadId=t.id;window.WeaveFocus?.dismiss()}if(state.view==='hybrid')requestAnimationFrame(annotate)});
   document.addEventListener('weave:view-changed',e=>{if(!state.busy&&e.detail.view==='chat'&&state.view==='map'){setControls('chat');app.classList.remove('inspector-open')}});
-  document.addEventListener('pointerdown',e=>{if(!e.target.closest('.history-popover,#railChat,#railHistory'))history.classList.remove('show');if(!e.target.closest('.settings-popover,#railSettings,#modeIndicator,#pageMore,.composer-options'))settings.classList.remove('show')});
+  document.addEventListener('pointerdown',e=>{if(!e.target.closest('.history-popover,#railChat,#railHistory'))history.classList.remove('show');if(!e.target.closest('.settings-popover,#railSettings,#modeIndicator,#pageMore,.composer-options'))settings.classList.remove('show');if(!e.target.closest('.dispatch-sheet,#railDispatch'))$('dispatchSheet')?.classList.remove('show');if(!e.target.closest('.export-popover,#railExport'))$('exportPopover')?.classList.remove('show')});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeSurfaces()});
   window.WeaveStudio={reveal,conversation,keepIdea,showExecution,annotate,isTransitioning:()=>state.busy};
   document.addEventListener('weave:language-changed',()=>{if(state.view==='hybrid')annotate()});

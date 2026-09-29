@@ -7,3 +7,23 @@
 @media(prefers-reduced-motion:reduce){.anchored-phrase.anchor-flash{animation:none;outline:1px solid #b7a6ff80;outline-offset:3px}}
 @media(max-width:800px){#threadStrand{display:none!important}}.legacy-map-view #focusMapEmpty{display:none!important}
 .idea-more{flex-wrap:wrap}.idea-parent-row{display:block;width:100%;font-size:12px;color:var(--muted);margin-top:8px}.idea-parent-row select{display:block;width:100%;padding:8px;background:#222227;border:1px solid var(--line);border-radius:7px;font-size:12px;margin-top:6px}
+/* 嵌套探索：直接父层移到中间（只读），当前探索仍在右侧；更早层级收进路径导航 */
+#parentPanel{position:fixed;z-index:41;right:436px;top:100px;bottom:40px;width:380px;display:flex;flex-direction:column;background:#141417e0;border:1px solid #ffffff08;border-radius:16px;box-shadow:12px 20px 40px #00000008;opacity:0;visibility:hidden;transform:translateX(30px);transition:opacity .28s var(--ease),transform .28s var(--ease),visibility .28s;pointer-events:none;overflow:hidden}
+.explore-open.thread-visible.explore-deep #parentPanel{visibility:visible;opacity:1;transform:translateX(0);pointer-events:auto}
+#parentPanel .explore-compose,#parentPanel .explore-actions{display:none}
+#parentPanel .explore-message p{color:#c2bfcc}
+#parentPanel .explore-source blockquote{color:#96929f}
+#parentBack{font-size:12px;color:#a79fc0;padding:0}
+#parentBack:hover{color:var(--ink)}
+.explore-path{display:flex;align-items:center;flex-wrap:wrap;gap:2px 6px;padding:0 25px 12px;font-size:12px;color:#6f6a7d;min-width:0}
+.explore-path button{font-size:12px;color:#8f8a9e;padding:2px 3px;max-width:148px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:5px}
+.explore-path button:hover{color:var(--ink)}
+.explore-path button.now{color:#cfc7e2;cursor:default}
+.explore-path .path-sep{color:#565165}
+@media(min-width:1100px){
+  .explore-open.explore-deep .main-stage{padding-right:844px}
+  .explore-open.explore-deep .chat-messages{width:calc(100% - 40px);max-width:560px}
+  .explore-open.explore-deep .chat-composer-wrap{width:calc(100% - 40px);max-width:560px}
+}
+/* 窄屏（含中等宽度）：只保留当前探索单面板，路径导航 + 返回入口即可回到上层 */
+@media(max-width:1259px){#parentPanel{display:none!important}}

@@ -43,23 +43,68 @@
 /* 粒子画布浮在纱之上，光尘感觉贴着界面漂浮 */
 .weave-bg .bg-particles{position:absolute;inset:0;width:100%;height:100%}
 
-/* Chat 界面：对话区磨砂玻璃层 —— 极光透过玻璃微微可见，同时保证正文可读 */
-.chat-messages{
-  background:rgba(16,13,25,.44);
-  border:1px solid rgba(255,255,255,.075);
-  border-radius:22px;
-  padding:26px 30px 38px;
-  box-shadow:0 18px 50px rgba(5,3,10,.35),inset 0 1px 0 rgba(255,255,255,.05);
+/* Chat 界面：整列磨砂玻璃 —— 上沿止于 topbar 下沿（不画边线），左右两侧淡出，下沿到界面底部 */
+.chat-glass{
+  position:absolute;
+  top:0;bottom:0;left:50%;transform:translateX(-50%);
+  width:min(920px,calc(100% - 64px));
+  background:rgba(16,13,25,.42);
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 88px,#000 calc(100% - 88px),transparent 100%);
+  mask-image:linear-gradient(90deg,transparent 0,#000 88px,#000 calc(100% - 88px),transparent 100%);
+  pointer-events:none;
+  z-index:-1;
 }
 @supports (backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px)){
-  .chat-messages{
-    background:rgba(16,13,25,.3);
-    backdrop-filter:blur(16px) saturate(1.25);
-    -webkit-backdrop-filter:blur(16px) saturate(1.25);
+  .chat-glass{
+    background:rgba(16,13,25,.26);
+    backdrop-filter:blur(18px) saturate(1.3);
+    -webkit-backdrop-filter:blur(18px) saturate(1.3);
   }
+}
+/* 正文与输入框直接落在玻璃列内，消息区不再各自带底色 */
+.chat-messages{
+  background:none;border:0;border-radius:0;box-shadow:none;
+  padding:38px 0 64px;
 }
 /* 玻璃层之上，用户气泡稍微提亮以保持前后层次 */
 .chat-message.user .chat-message-text{background:#ffffff12}
+
+/* 顶栏左侧：对话标题放在 weave 标志右侧，与右侧语言 / 引导按钮齐平 */
+.topbar-title{
+  font-size:14px;font-weight:500;letter-spacing:.01em;line-height:1.4;
+  color:rgba(233,228,245,.72);
+  max-width:min(44vw,480px);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  margin:0 0 0 2px;padding:0 0 0 15px;
+  border-left:1px solid rgba(255,255,255,.12);
+}
+
+/* 「看见结构 / Reveal the map」——右上角主操作：玻璃底 + 极光渐变质感 */
+.convert-button{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 15px 8px 13px;
+  border:1px solid rgba(177,148,255,.45);
+  border-radius:12px;
+  background:linear-gradient(135deg,rgba(148,102,255,.36),rgba(88,132,255,.18) 55%,rgba(212,140,255,.26));
+  color:#efeafc;
+  font-size:12.5px;letter-spacing:.02em;white-space:nowrap;
+  text-shadow:0 1px 2px rgba(18,10,38,.4);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 6px 20px rgba(96,70,190,.3);
+  transition:transform .18s var(--ease),box-shadow .18s,border-color .18s,filter .18s;
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
+.convert-button svg{width:15px;height:15px;filter:drop-shadow(0 0 6px rgba(190,160,255,.55))}
+.convert-button:hover:not(:disabled){
+  border-color:rgba(205,180,255,.68);
+  background:linear-gradient(135deg,rgba(160,116,255,.46),rgba(100,142,255,.26) 55%,rgba(224,156,255,.36));
+  transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.22),0 10px 28px rgba(110,80,220,.42),0 0 0 3px rgba(155,123,255,.12);
+}
+.convert-button:active:not(:disabled){transform:translateY(0) scale(.98)}
+.convert-button:disabled{opacity:.4;filter:saturate(.6)}
+/* 只在对话视图出现；图谱视图与空白欢迎页隐藏 */
+.shell:not(.chat-mode) .convert-button,.home-mode .convert-button{display:none}
 
 /* 左上角 WEAVE 字标 — 艺术衬线斜体 + 极光渐变字身 */
 .wordmark{
@@ -196,4 +241,18 @@
 @media (prefers-reduced-motion:reduce){
   .weave-bg .bg-photo,.weave-bg .bg-blob{animation:none}
   .weave-bg .bg-photo{transform:scale(1.1)}
+}
+
+/* 窄屏：标题收窄；玻璃列变窄、淡出带缩短；顶栏隐藏 Reveal 按钮（rail 图谱入口仍可用） */
+@media (max-width:1100px){
+  .topbar-title{max-width:34vw}
+}
+@media (max-width:800px){
+  .convert-button{display:none}
+  .chat-glass{
+    width:calc(100% - 36px);
+    -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 44px,#000 calc(100% - 44px),transparent 100%);
+    mask-image:linear-gradient(90deg,transparent 0,#000 44px,#000 calc(100% - 44px),transparent 100%);
+  }
+  .chat-messages{padding-top:24px}
 }

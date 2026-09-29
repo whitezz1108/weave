@@ -101,13 +101,13 @@
       node._x=175+depth*322;
       visible.push(node);
       const kids=node.collapsed?[]:children(node.id);
-      if(!kids.length){node._y=95+leaf*110;leaf+=1}
+      if(!kids.length){node._y=108+leaf*126;leaf+=1}
       else{kids.forEach(c=>walk(c,depth+1));node._y=(kids[0]._y+kids[kids.length-1]._y)/2}
     }
     walk(nodeById('root')||state.nodes[0],0);
     state.visible=visible;
     state.worldW=Math.max(750,175+maxDepth*322+190);
-    state.worldH=Math.max(480,Math.max(1,leaf)*110+80);
+    state.worldH=Math.max(620,Math.max(1,leaf)*126+100);
   }
   function edgePath(parent,child){
     const x1=parent._x+118,x2=child._x-116,mid=(x1+x2)/2;
@@ -124,8 +124,8 @@
     state.visible.forEach(n=>{
       if(!n.parent||!visibleIds.has(n.parent))return;
       const p=nodeById(n.parent),d=edgePath(p,n);
-      edges+='<path class="edge-base'+(selectedPath.has(n.id)&&selectedPath.has(p.id)?' selected':'')+'" data-from="'+esc(p.id)+'" data-to="'+esc(n.id)+'" d="'+d+'"/>';
-      if(n.status==='running'&&n.taskId){
+      edges+='<path class="edge-base'+(selectedPath.has(n.id)&&selectedPath.has(p.id)?' selected':'')+'" d="'+d+'"/>';
+      if(n.status==='running'){
         edges+='<path class="edge-water" d="'+d+'"/>';
         if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches)edges+='<circle r="3.4" fill="#bfdef7" opacity=".9"><animateMotion dur="2.4s" repeatCount="indefinite" path="'+d+'"/></circle>';
       }
@@ -139,8 +139,11 @@
       const fold=kids.length?'<button class="node-fold" data-fold="'+esc(n.id)+'" title="'+(n.collapsed?'展开':'折叠')+' '+kids.length+' 个子分支" aria-label="'+(n.collapsed?'展开':'折叠')+'子分支">'+(n.collapsed?'＋':'−')+'</button>':'';
       const model=n.status==='queued'?'未分发':n.mode==='real'?MODEL[n.model]+' · 本地':MODEL[n.model]+' · 演示';
       const progressText=n.progress==null&&n.status==='running'?'执行中':n.status==='queued'?'待开始':Math.round(progress)+'%';
-      return '<div class="graph-node status-'+esc(n.status)+(n.id==='root'?' root':'')+(n.id===state.selectedId?' selected':'')+(n.status==='running'&&n.taskId?' task-active':'')+'" role="button" tabindex="0" data-kind="'+esc(n.kind)+'" data-node="'+esc(n.id)+'" style="left:'+n._x+'px;top:'+n._y+'px" title="'+esc(n.title)+'">'
-        +'<span class="node-kind-dot" aria-hidden="true"></span><div class="node-title">'+esc(n.title)+'</div>'+fold+'</div>';
+      return '<div class="graph-node status-'+esc(n.status)+(n.id==='root'?' root':'')+(n.id===state.selectedId?' selected':'')+'" role="button" tabindex="0" data-node="'+esc(n.id)+'" style="left:'+n._x+'px;top:'+n._y+'px" title="'+esc(n.summary)+'">'
+        +'<span class="node-bud"></span><span class="node-output"></span><span class="node-leaves growth-'+growth+'"><i></i><i></i><i></i></span>'
+        +'<div class="node-head"><span class="node-glyph">'+(n.id==='root'?'✦':n.kind==='CLI TASK'?'⌁':'◇')+'</span><span class="node-category">'+esc(n.kind)+'</span><span class="spacer"></span><span class="node-state-mini"></span>'+fold+'</div>'
+        +'<div class="node-title">'+esc(n.title)+'</div><div class="node-subline"><span class="node-model">'+esc(model)+'</span><span>'+(hidden?'<span class="node-hidden-count">＋'+hidden+' 隐藏</span>':progressText)+'</span></div>'
+        +'<div class="node-progress'+(indeterminate?' indeterminate':'')+'"><span style="width:'+progress+'%"></span></div></div>';
     }).join('');
   }
   function setTransform(){
@@ -154,7 +157,7 @@
     layout();renderGraph();
     if(scale!=null)state.scale=scale;
     const vp=$('graphViewport');
-    state.panX=vp.clientWidth*(n.id==='root'?.26:.5)-n._x*state.scale;
+    state.panX=vp.clientWidth*.69-n._x*state.scale;
     state.panY=vp.clientHeight*.56-n._y*state.scale;
     state.initialPositioned=true;
     setTransform();persist();
@@ -194,9 +197,8 @@
     document.querySelector('.growth-tree').setAttribute('data-growth',String(clamp(Math.ceil(overall/20),0,5)));
     $('headlineNodeCount').textContent=state.nodes.length;
     const openBranches=children('root').length;
-    $('graphMeta').textContent=state.nodes.length+' 个想法 · '+openBranches+' 条分支 · '+state.visible.length+' 个可见';
+    $('graphMeta').textContent=state.nodes.length+' nodes · '+openBranches+' branches · '+state.visible.length+' visible';
     const running=state.nodes.find(n=>n.taskId&&n.status==='running'&&n.id!=='root')||state.nodes.find(n=>n.taskId&&n.status==='review');
-    document.querySelector('.execution-strip').hidden=!running;
     if(running){
       $('stripTitle').textContent=running.title;
       $('stripSubtitle').textContent=running.mode==='real'?'本地 Claude Code · 日志与退出码可查看':running.status==='running'?'演示任务运行中 · 浇灌动画同步':'已完成运行 · 等待人工验收';
@@ -278,7 +280,7 @@
     const title=$('branchTitle').value.trim(),prompt=$('branchPrompt').value.trim();
     if(!title){$('branchTitle').focus();toast('先给这个分支起一个名字');return}
     const parent=active(),id='n-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,6);
-    const node={id,parent:parent.id,title,kind:'NEW BRANCH',status:'queued',progress:0,summary:WeaveI18n.language==='en'?'A branch from “'+parent.title+'”.':'从「'+parent.title+'」生长的新分支。',prompt:prompt||(WeaveI18n.language==='en'?'Explore “'+title+'” and suggest actionable next steps.':'请围绕「'+title+'」探索，并给出可执行的下一步。'),collapsed:false,model:'sonnet',permission:'plan',mode:'demo',taskId:null,startedAt:null,finishedAt:null,exitCode:null,sessionId:null,resultIsError:false,logs:[],checkpoints:[],acceptance:null};
+    const node={id,parent:parent.id,title,kind:'NEW BRANCH',status:'queued',progress:0,summary:'从「'+parent.title+'」生长的新分支。',prompt:prompt||'请围绕「'+title+'」探索，并给出可执行的下一步。',collapsed:false,model:'sonnet',permission:'plan',mode:'demo',taskId:null,startedAt:null,finishedAt:null,exitCode:null,sessionId:null,resultIsError:false,logs:[],checkpoints:[],acceptance:null};
     parent.collapsed=false;state.nodes.push(node);closeBranch();selectNode(id,true);toast('新分支已加入图谱');
   }
   function addLog(n,type,text){
@@ -423,94 +425,6 @@
       n.status='cancelled';n.finishedAt=new Date().toISOString();addLog(n,'status','演示任务已停止。');renderAll();toast('演示任务已停止');
     }
   }
-  /* 把聊天消息按图谱先序遍历顺序重排；未被节点引用的消息跟随它原来前面的那条。 */
-  function syncChatOrder(){
-    const root=nodeById('root');
-    const threads=root?.sourceChatThreadId&&window.WeaveChat?.getThreads?.()?window.WeaveChat.getThreads():[];
-    const thread=threads.find(t=>t.id===root.sourceChatThreadId);
-    if(!thread||!Array.isArray(thread.messages)||thread.messages.length<2)return false;
-    const order=[],seen=new Set();
-    (function visit(node){
-      for(const sid of node.sourceIds||[])if(!seen.has(sid)){seen.add(sid);order.push(sid)}
-      for(const child of children(node.id))visit(child);
-    })(root);
-    const groups=new Map(),head=[];let lastRef=null;
-    for(const message of thread.messages){
-      if(seen.has(message.id)){lastRef=message.id;if(!groups.has(message.id))groups.set(message.id,[])}
-      else if(lastRef)groups.get(lastRef).push(message);
-      else head.push(message);
-    }
-    const byId=new Map(thread.messages.map(m=>[m.id,m]));
-    const next=[...head];
-    for(const id of order){const m=byId.get(id);if(m)next.push(m,...(groups.get(id)||[]))}
-    if(next.length!==thread.messages.length)return false;
-    thread.messages=next;
-    try{window.WeaveChat.save();window.WeaveChat.refresh?.()}catch(_){}
-    return true;
-  }
-  function insertNodeAt(n,beforeId){
-    const index=state.nodes.indexOf(n);
-    if(index>-1)state.nodes.splice(index,1);
-    if(beforeId){
-      const at=state.nodes.findIndex(item=>item.id===beforeId);
-      if(at>-1)state.nodes.splice(at,0,n);else state.nodes.push(n);
-    }else state.nodes.push(n);
-  }
-  /* parentId：目标父级；beforeId：插入到该兄弟之前（省略则排到末尾）。 */
-  function moveIdea(id,parentId,beforeId){
-    const n=nodeById(id),parent=nodeById(parentId);
-    if(!n||!parent||id==='root'||id===parentId)return false;
-    if(pathTo(parentId).some(p=>p.id===id))return false;
-    if(beforeId&&(beforeId===id||nodeById(beforeId)?.parent!==parentId))return false;
-    const sameParent=n.parent===parentId;
-    if(sameParent){
-      const siblings=children(parentId);
-      const currentIdx=siblings.findIndex(s=>s.id===id);
-      const nextNow=siblings[currentIdx+1]?.id||null;
-      if((beforeId||null)===nextNow)return false;
-    }
-    n.parent=parentId;parent.collapsed=false;
-    if(state.selectedId===id)state.lastInspectorId=null;
-    insertNodeAt(n,beforeId);
-    renderAll();focusNode(id);
-    const reordered=syncChatOrder();
-    toast(sameParent
-      ?(reordered?'已调整顺序，聊天已按结构重排':'已调整顺序')
-      :(reordered?'已移到「'+parent.title+'」下，聊天已按结构重排':'已移到「'+parent.title+'」下'));
-    return true;
-  }
-  function deleteIdea(id){
-    const n=nodeById(id);
-    if(!n||id==='root')return false;
-    const subtree=descendants(id);
-    const en=window.WeaveI18n?.language==='en';
-    const question=en
-      ?'Delete “'+n.title+'”'+(subtree.length?' and its '+subtree.length+' child ideas':'')+'? The chat messages will stay.'
-      :'删除「'+n.title+'」'+(subtree.length?'及其 '+subtree.length+' 个子想法':'')+'？对应的聊天消息会保留。';
-    if(!window.confirm(question))return false;
-    const ids=new Set([id,...subtree.map(m=>m.id)]);
-    for(const dead of ids)if(demoTimers.has(dead)){clearInterval(demoTimers.get(dead));demoTimers.delete(dead)}
-    const parentId=n.parent;
-    state.nodes=state.nodes.filter(item=>!ids.has(item.id));
-    if(ids.has(state.selectedId))state.selectedId=nodeById(parentId)?parentId:'root';
-    state.lastInspectorId=null;
-    renderAll();focusNode(state.selectedId);
-    syncChatOrder();
-    toast('已删除「'+n.title+'」');
-    return true;
-  }
-  /* 任务分发表使用：单节点分发（mode: demo|real）与逐节点模型设置 */
-  function dispatchNode(id,mode){
-    const n=nodeById(id);if(!n)return false;
-    if(!n.prompt){toast('先写下要分发的 Prompt');return false}
-    if(n.status==='running'&&n.taskId){switchTab('logs');toast('当前任务正在运行；停止后可重新分发');return false}
-    if(mode==='real')dispatchReal(n);else startDemo(n);
-    return true;
-  }
-  function setNodeModel(id,model){
-    const n=nodeById(id);if(!n||!MODEL[model])return false;
-    n.model=model;renderAll();return true;
-  }
   function bind(){
     $('graphNodes').addEventListener('click',event=>{
       const fold=event.target.closest('[data-fold]');
@@ -558,77 +472,6 @@
     vp.addEventListener('pointermove',event=>{if(!drag)return;state.panX=drag.px+event.clientX-drag.x;state.panY=drag.py+event.clientY-drag.y;setTransform()});
     function endDrag(){drag=null;vp.classList.remove('dragging')}
     vp.addEventListener('pointerup',endDrag);vp.addEventListener('pointercancel',endDrag);
-    /* 拖动节点（思维导图惯例）：悬停节点中央 = 移入子级；上/下边缘 = 并列插入；
-       近距悬停时显示连线预览（虚线）与插入横条。聊天按先序遍历同步重排。 */
-    const nodesLayer=$('graphNodes');let nodeDrag=null;
-    function dropPlanAt(x,y,dragId){
-      const hit=document.elementFromPoint(x,y)?.closest('.graph-node');
-      if(!hit)return null;
-      const hitId=hit.dataset.node;
-      if(hitId===dragId||pathTo(hitId).some(p=>p.id===dragId))return null;
-      const rect=hit.getBoundingClientRect(),rel=(y-rect.top)/rect.height;
-      if(hitId==='root'||(rel>0.3&&rel<0.7))return {kind:'child',hitEl:hit,parentId:hitId,beforeId:null};
-      const parentId=nodeById(hitId).parent;
-      if(!parentId||pathTo(parentId).some(p=>p.id===dragId))return null;
-      if(rel<=0.3)return {kind:'before',hitEl:hit,parentId,beforeId:hitId};
-      const siblings=children(parentId),next=siblings[siblings.findIndex(s=>s.id===hitId)+1];
-      return {kind:'after',hitEl:hit,parentId,beforeId:next?next.id:null};
-    }
-    function updateDropVisuals(plan){
-      nodesLayer.querySelectorAll('.drop-target,.drop-sibling').forEach(el=>el.classList.remove('drop-target','drop-sibling'));
-      const svg=$('graphEdges');
-      if(!plan){svg.querySelector('.edge-preview')?.remove();nodesLayer.querySelector('.drop-bar')?.remove();return}
-      let bar=nodesLayer.querySelector('.drop-bar');
-      if(!bar){bar=document.createElement('div');bar.className='drop-bar';nodesLayer.append(bar)}
-      const hit=nodeById(plan.hitEl.dataset.node);
-      if(plan.kind==='child'){
-        plan.hitEl.classList.add('drop-target');bar.remove();
-      }else{
-        plan.hitEl.classList.add('drop-sibling');
-        bar.style.left=hit._x+'px';
-        bar.style.top=hit._y+(plan.kind==='before'?-33:33)+'px';
-      }
-      let preview=svg.querySelector('.edge-preview');
-      if(!preview){preview=document.createElementNS('http://www.w3.org/2000/svg','path');preview.setAttribute('class','edge-preview');svg.append(preview)}
-      const cx=parseFloat(nodeDrag.el.style.left)||0,cy=parseFloat(nodeDrag.el.style.top)||0;
-      preview.setAttribute('d',edgePath(nodeById(plan.parentId),{_x:cx,_y:cy}));
-    }
-    nodesLayer.addEventListener('pointerdown',event=>{
-      if(event.button!==0||event.target.closest('.node-fold'))return;
-      const el=event.target.closest('.graph-node');if(!el)return;
-      nodeDrag={id:el.dataset.node,el,x:event.clientX,y:event.clientY,left:parseFloat(el.style.left)||0,top:parseFloat(el.style.top)||0,started:false,plan:null};
-      try{el.setPointerCapture(event.pointerId)}catch(_){}
-    });
-    nodesLayer.addEventListener('pointermove',event=>{
-      if(!nodeDrag)return;
-      const dx=event.clientX-nodeDrag.x,dy=event.clientY-nodeDrag.y;
-      if(!nodeDrag.started){
-        if(Math.hypot(dx,dy)<5)return;
-        if(nodeDrag.id==='root'){nodeDrag=null;toast('主话题不能移动');return}
-        nodeDrag.started=true;nodeDrag.el.classList.add('dragging');nodeDrag.el.style.pointerEvents='none';
-        document.querySelectorAll('.edge-base[data-to="'+nodeDrag.id+'"]').forEach(p=>p.style.opacity='.12');
-      }
-      nodeDrag.el.style.left=nodeDrag.left+dx/state.scale+'px';
-      nodeDrag.el.style.top=nodeDrag.top+dy/state.scale+'px';
-      nodeDrag.plan=dropPlanAt(event.clientX,event.clientY,nodeDrag.id);
-      updateDropVisuals(nodeDrag.plan);
-    });
-    function endNodeDrag(){
-      if(!nodeDrag)return;const d=nodeDrag;nodeDrag=null;
-      if(!d.started)return;
-      d.el.style.pointerEvents='';
-      nodesLayer.querySelectorAll('.drop-target,.drop-sibling').forEach(el=>el.classList.remove('drop-target','drop-sibling'));
-      if(!(d.plan&&moveIdea(d.id,d.plan.parentId,d.plan.beforeId)))renderAll();
-    }
-    nodesLayer.addEventListener('pointerup',endNodeDrag);
-    nodesLayer.addEventListener('pointercancel',endNodeDrag);
-    document.addEventListener('keydown',event=>{
-      if(event.key!=='Delete'&&event.key!=='Backspace')return;
-      if(event.target.closest&&event.target.closest('input,textarea,select,[contenteditable=""],[contenteditable="true"]'))return;
-      const el=event.target.closest&&event.target.closest('.graph-node');if(!el)return;
-      if($('app').classList.contains('chat-mode'))return;
-      event.preventDefault();deleteIdea(el.dataset.node);
-    });
     vp.addEventListener('wheel',event=>{event.preventDefault();const box=vp.getBoundingClientRect();zoomAt(event.deltaY<0?1.09:1/1.09,event.clientX-box.left,event.clientY-box.top)},{passive:false});
     window.addEventListener('resize',()=>{if(state.initialPositioned)setTransform()});
     $('addBranchButton').onclick=()=>openBranch();
@@ -664,35 +507,11 @@
     };
   }
   window.WeaveApp={
-    hasSaved:!!saved,
     selectNode,
     focusNode,
     fitMap,
     openRootBranch:()=>openBranch('root'),
     getSelected:()=>active(),
-    getNodes:()=>state.nodes,
-    getSnapshot:()=>structuredClone({nodes:state.nodes,selectedId:state.selectedId}),
-    restoreSnapshot(snapshot){
-      if(!snapshot?.nodes?.some(n=>n.id==='root'))return;
-      demoTimers.forEach(timer=>clearInterval(timer));demoTimers.clear();
-      state.nodes=structuredClone(snapshot.nodes);state.selectedId=snapshot.selectedId||'root';state.lastInspectorId=null;
-      renderAll();for(const n of state.nodes)if(n.status==='running'&&n.mode==='demo'&&n.taskId)startDemoTicker(n);
-    },
-    updateIdea(id,updates){const n=nodeById(id);if(!n)return;for(const key of ['title','summary','ideaStatus'])if(typeof updates[key]==='string')n[key]=updates[key];renderAll()},
-    moveIdea,
-    deleteIdea,
-    syncChatOrder,
-    dispatchNode,
-    setNodeModel,
-    getBridgeState:()=>({connected:state.bridgeConnected,available:state.bridgeAvailable}),
-    syncIdeas(candidates,threadId){
-      const previous=nodeById('root')?.sourceChatThreadId===threadId?structuredClone(state.nodes):[];
-      this.replaceGraphFromIdeas(candidates,threadId);
-      for(const n of state.nodes){const old=previous.find(p=>p.id===n.id);if(old)Object.assign(n,old,{sourceIds:n.sourceIds,explorationId:n.explorationId})}
-      for(const old of previous)if(!state.nodes.some(n=>n.id===old.id)&&old.id.startsWith('n-'))state.nodes.push(old);
-      renderAll();for(const n of state.nodes)if(n.status==='running'&&n.mode==='demo'&&n.taskId)startDemoTicker(n);
-    },
-    getRoot:()=>nodeById('root'),
     getNodeCount:()=>state.nodes.length,
     replaceGraphFromIdeas(candidates,sourceThreadId){
       const accepted=Array.isArray(candidates)?candidates.filter(item=>item&&item.included!==false):[];
@@ -717,7 +536,6 @@
           sourceChatThreadId:sourceThreadId||null,
           sourceIds:Array.isArray(item.sourceIds)?item.sourceIds.slice():[],
           sourceIndexes:Array.isArray(item.sourceIndexes)?item.sourceIndexes.slice():[],
-          explorationId:item.explorationId||null,
           sourceReason:String(item.reason||'')
         };
       };
@@ -731,7 +549,7 @@
   };
   bind();renderAll();switchTab('overview');
   setTimeout(()=>focusNode(state.selectedId,.78),50);
-  if(saved)for(const n of state.nodes)if(n.status==='running'&&n.mode==='demo'&&n.taskId)startDemoTicker(n);
+  for(const n of state.nodes)if(n.status==='running'&&n.mode==='demo'&&n.taskId)startDemoTicker(n);
   if(location.protocol!=='file:')connectBridge(true);
   setInterval(pollReal,1600);
 })();
